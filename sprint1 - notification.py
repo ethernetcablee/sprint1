@@ -5,10 +5,11 @@ import smtplib
 from email.mime.text import MIMEText
 
 
-SENDER_EMAIL = "noahbasch@gmail.com"          # <-- use a Gmail address here
-APP_PASSWORD = "epyg lvmt yjvc scxg"              # <-- 16-char Gmail App Password, no spaces
+SENDER_EMAIL = "noahbasch@gmail.com"          # my Gmail address here
+APP_PASSWORD = "epyg lvmt yjvc scxg"              # Gmail App Password
 RECIPIENT_EMAIL = "noahbasch@gmail.com"            # who receives the email
 MEDICATION_NAME = "XYZ"
+NAME_USER = "Noah"
 
 #sends an email from gmail account
 def send_email(subject: str, body: str):
@@ -30,12 +31,12 @@ def remind():
     )
 
     subject = "Medication Reminder"
-    body = f"Hi Noah,\n\nIt's time to take your {MEDICATION_NAME} medication.\n\n—Your Reminder App"
+    body = f"Hi {NAME_USER},\n\nIt's time to take your {MEDICATION_NAME} medication.\n\n—Your Reminder App"
     try:
         send_email(subject, body)
-        print("✅ Email sent.")
+        print(" Success! Email sent.")
     except Exception as e:
-        print("⚠️ Email failed:", e)
+        print(" Failure! Email failed:", e)
 
 schedule.every().thursday.at("18:50").do(remind)
 print("Next run:")
