@@ -3,7 +3,7 @@ import time
 from plyer import notification
 import smtplib
 from email.mime.text import MIMEText
-
+qwe
 
 SENDER_EMAIL = ""          # my Gmail address here
 APP_PASSWORD = ""          # Gmail App Password
