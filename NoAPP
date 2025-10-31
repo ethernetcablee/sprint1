@@ -5,8 +5,8 @@ import smtplib
 from email.mime.text import MIMEText
 
 
-SENDER_EMAIL = "noahbasch@gmail.com"          # my Gmail address here
-APP_PASSWORD = "epyg lvmt yjvc scxg"          # Gmail App Password
+SENDER_EMAIL = ""          # my Gmail address here
+APP_PASSWORD = ""          # Gmail App Password
 RECIPIENT_EMAIL = "noahbasch@gmail.com"       # who receives the email
 MEDICATION_NAME = "XYZ"
 NAME_USER = "Noah"
@@ -63,3 +63,4 @@ if __name__ == "__main__":
     while True:
         schedule.run_pending()
         time.sleep(1)
+
