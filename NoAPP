@@ -1,17 +1,18 @@
+
 import schedule
 import time
 from plyer import notification
 import smtplib
 from email.mime.text import MIMEText
-qwe
+
 
 SENDER_EMAIL = ""          # my Gmail address here
-APP_PASSWORD = ""          # Gmail App Password
-RECIPIENT_EMAIL = "noahbasch@gmail.com"       # who receives the email
-MEDICATION_NAME = "XYZ"
+APP_PASSWORD = ""          #  App Password
+RECIPIENT_EMAIL = ""       # who receives the email
+MEDICATION_NAME = ""         # medication name
 NAME_USER = "Noah"
-REMINDER_TIME = "01:21" 
-REMINDER_DAY = "friday" # e.g., schedule.THURSDAY
+REMINDER_TIME = "00:00" 
+REMINDER_DAY = "" # e.g., schedule.THURSDAY
 
 subject = "Medication Reminder App"
 
@@ -22,7 +23,7 @@ timout = 10
 
 #sends an email from gmail account
 def send_email(subject: str, body: str):
-    msg = MIMEText(body)
+    msg = MIMEText(body)        
     msg["Subject"] = subject
     msg["From"] = SENDER_EMAIL
     msg["To"] = RECIPIENT_EMAIL
@@ -57,10 +58,10 @@ if __name__ == "__main__":
             send_email, "---TEST--- ",f"Hi {NAME_USER},\n\nIt's time to take your {MEDICATION_NAME}.\n\n—Your Reminder App"
         )  
         print(f"Scheduled for {REMINDER_DAY.title()} at {REMINDER_TIME}")
+#rejects invalid day input! and prints error message
     else:
         print(f"Invalid day: {REMINDER_DAY}")
 
     while True:
         schedule.run_pending()
         time.sleep(1)
-
