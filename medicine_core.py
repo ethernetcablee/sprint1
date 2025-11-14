@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
-import NoAPP
+
 
 TIME_MASK = "%I.%M %p"   # e.g., "10.00 AM"; "09.00 PM"
 DATE_MASK = "%m/%d/%Y"
@@ -17,15 +17,6 @@ class Reminder:
     option: Optional[str] = None  # stored for UI/teammate; not validated here
 
 class ReminderService:
-    """
-    Minimal logic for Test Case 1 & 2 only:
-      - TC01: Create reminder with valid inputs -> save
-      - TC02: Missing required field -> raise ValidationError
-    Notes:
-      - No duplicate checking (that's for TC03).
-      - No boundary checks like 50-char name (that's TC04).
-      - No notification scheduling (teammate owns that).
-    """
     def __init__(self) -> None:
         self._reminders: List[Reminder] = []
 
@@ -50,26 +41,11 @@ class ReminderService:
         r = Reminder(medicine_name=medicine_name.strip(), dosage=dosage.strip(), when=when, option=option)
         self._reminders.append(r)
         return r
-
-    def list_reminders_on(self, date_str: str) -> List[Reminder]:
-        try:
-            target = datetime.strptime(date_str, DATE_MASK).date()
-        except ValueError:
-            raise ValidationError("Date must be MM/DD/YYYY")
-        return [r for r in self._reminders if r.when.date() == target]
-
-def schedule_reminder(medicine_name, dosage, day, time, user_name="User"):
-    """
-    Connects the reminder created in medicine_core to the notification system in NoAPP.
-    """
-    # Set scheduler variables
-    NoAPP.MEDICATION_NAME = medicine_name
-    NoAPP.NAME_USER = user_name
-    NoAPP.REMINDER_DAY = day.lower()
-    NoAPP.REMINDER_TIME = time
-
-    print(f"[CORE] Scheduling reminder for {medicine_name} on {day} at {time}...")
-
-    # We do NOT start NoAPP's infinite while-loop here
-    # The UI will start it at the end of all reminders
-    return True
+    def delete_reminder(self, index: int) -> bool:
+        if 0 <= index < len(self._reminders):
+            del self._reminders[index]
+            return True
+        return False
+        
+    def list_reminders(self) -> List[Reminder]:
+        return list(self._reminders)
