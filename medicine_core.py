@@ -32,7 +32,6 @@ class ReminderService:
         return datetime.combine(d, t)
 
     def add_reminder(self, *, medicine_name: str, dosage: str, date_str: str, time_str: str, option: str | None = None) -> Reminder:
-        # Only the required-fields rule for TC02
         if not medicine_name or not dosage or not time_str:
             raise ValidationError("Required: medicine name, dosage, time")
         when = self._parse_when(date_str, time_str)
