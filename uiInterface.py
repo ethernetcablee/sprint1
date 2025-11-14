@@ -1,40 +1,166 @@
-import NoAPP
 from medicine_core import ReminderService, ValidationError
+import NoAPP
+
 service = ReminderService()
-"""
-Show Reminders
-Add new Reminder
-Delete Reminder
-Modify Reminders
-"""
+
+# Fill these in for your account
+NoAPP.SENDER_EMAIL = "ninjabec05@gmail.com"
+NoAPP.APP_PASSWORD = "guypmgvxnowtipgn"
+NoAPP.RECIPIENT_EMAIL = "ninjabec05@gmail.com"
+NoAPP.NAME_USER = "Blake"
+
+# Start scheduler once
+NoAPP.start_scheduler_background()
+
+# SCHEDULE REMINDER
+def schedule_in_NoAPP(reminder):
+    weekday_str = reminder.when.strftime("%A").lower()
+    time_24 = reminder.when.strftime("%H:%M")
+
+    NoAPP.schedule_reminder(
+        reminder.medicine_name,
+        weekday_str,
+        time_24,
+        NoAPP.NAME_USER
+    )
+
+# ADD REMINDER
 def add_new_reminder():
-    med = input("Medicine name: ")
-    dosage = input("Dosage: ")
-    day = input("Day (e.g., monday): ")
-    time = input("Time (HH:MM): ")
-
-    medicine_core.schedule_reminder(med, dosage, day, time, user_name="Noah")
-    print("Reminder added and scheduled!")
-
-x = input("(1) Add new reminder\n(2) Delete reminder\n(3) Modify reminder\n(4) Show reminders\n")
-match x:
-    case "1":
-        med = input("Medicine name: ")
-        dose = input("Dosage: ")
-        day = input("Day: ")
-        time = input("Time (HH:MM): ")
-
-        medicine_core.schedule_reminder(med, dose, day, time, "Noah")
-        print("Reminder added! Starting scheduler...")
-        NoAPP.run_scheduler()
-    case "2":
-        print("Delete reminder")
-    case "3":
-        print("Modify reminder")
-    case "4":
-        print("Show reminders")
+    print("\n--- Add New Reminder ---")
+    med = input("Medicine name: ").strip()
+    dosage = input("Dosage: ").strip()
+    date_str = input("Date (MM/DD/YYYY): ").strip()
+    time_str = input("Time (HH.MM AM/PM): ").strip()
+    try:
+        reminder = service.add_reminder(
+            medicine_name=med,
+            dosage=dosage,
+            date_str=date_str,
+            time_str=time_str
+        )
+    except ValidationError as e:
+        print(f"Error: {e}")
+        return
+    print("Reminder added successfully.")
+    schedule_in_NoAPP(reminder)
 
 
 
-print("Running scheduled reminders...")
-NoAPP.run_scheduler()
+# SHOW REMINDERS
+def show_reminders():
+    print("\n--- Current Reminders ---")
+    reminders = service.list_reminders()
+    if not reminders:
+        print("No reminders saved.")
+        return
+
+    for i, r in enumerate(reminders):
+        print(f"{i+1}. {r.medicine_name} - {r.dosage} - {r.when}")
+
+# DELETE REMINDER
+def delete_reminder():
+    reminders = service.list_reminders()
+
+    if not reminders:
+        print("No reminders to delete.")
+        return
+
+    print("\n--- Delete Reminder ---")
+    for i, r in enumerate(reminders):
+        print(f"{i+1}. {r.medicine_name} - {r.dosage} - {r.when}")
+
+    try:
+        choice = int(input("Enter reminder number to delete: "))
+        index = choice - 1
+    except ValueError:
+        print("Invalid input.")
+        return
+
+    if index < 0 or index >= len(reminders):
+        print("Invalid selection.")
+        return
+
+    # Get reminder info BEFORE deletion
+    r = reminders[index]
+    weekday_str = r.when.strftime("%A").lower()
+    time_24 = r.when.strftime("%H:%M")
+
+    # Remove from core storage
+    service.delete_reminder(index)
+    print("Reminder deleted from saved list.")
+
+    # Cancel NoAPP’s scheduled jobs
+    NoAPP.cancel_reminder(r.medicine_name, weekday_str, time_24)
+
+def modify_reminder():
+    reminders = service.list_reminders()
+    if not reminders:
+        print("No reminders to modify.")
+        return
+    print("\n--- Modify Reminder ---")
+    for i, r in enumerate(reminders):
+        print(f"{i+1}. {r.medicine_name} - {r.dosage} - {r.when}")
+    try:
+        choice = int(input("Enter the number of the reminder to modify: "))
+        index = choice - 1
+    except ValueError:
+        print("Invalid input.")
+        return
+    if index < 0 or index >= len(reminders):
+        print("Invalid selection.")
+        return
+    old = reminders[index]
+    old_day = old.when.strftime("%A").lower()
+    old_time = old.when.strftime("%H:%M")
+
+    # cancel old schedule
+    NoAPP.cancel_reminder(old.medicine_name, old_day, old_time)
+
+    # delete from core
+    service.delete_reminder(index)
+    print("Old reminder removed. Please enter new values.\n")
+
+    # ask user for new values
+    med = input("New medicine name: ").strip()
+    dosage = input("New dosage: ").strip()
+    date_str = input("New date (MM/DD/YYYY): ").strip()
+    time_str = input("New time (HH.MM AM/PM): ").strip()
+    try:
+        new_reminder = service.add_reminder(
+            medicine_name=med,
+            dosage=dosage,
+            date_str=date_str,
+            time_str=time_str
+        )
+    except ValidationError as e:
+        print(f"Error: {e}")
+        return
+    # schedule new reminder
+    schedule_in_NoAPP(new_reminder)
+
+    print("Reminder successfully modified.")
+
+# MENU LOOP
+def menu():
+    while True:
+        print("\n(1) Add new reminder\n(2) Delete reminder\n(3) Modify reminder\n(4) Show reminders\n(5) Exit")
+        x = input("Choose: ").strip()
+
+        match x:
+            case "1":
+                add_new_reminder()
+            case "2":
+                delete_reminder()
+            case "3":
+                modify_reminder()
+            case "4":
+                show_reminders()
+            case "5":
+                print("Goodbye.")
+                break
+            case _:
+                print("Invalid option.")
+
+
+if __name__ == "__main__":
+    menu()
