@@ -66,6 +66,6 @@ if __name__ == "__main__":
     else:
         print(f"Invalid day: {REMINDER_DAY}")
 
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    #while True:
+        #schedule.run_pending()
+        #time.sleep(1)
