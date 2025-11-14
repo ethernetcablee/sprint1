@@ -1,71 +1,79 @@
-
 import schedule
 import time
+import threading
 from plyer import notification
 import smtplib
 from email.mime.text import MIMEText
 
+# Set by UI
+SENDER_EMAIL = ""
+APP_PASSWORD = ""
+RECIPIENT_EMAIL = ""
+NAME_USER = ""
 
-SENDER_EMAIL = ""          # my Gmail address here
-APP_PASSWORD = ""          #  App Password
-RECIPIENT_EMAIL = ""       # who receives the email
-MEDICATION_NAME = ""         # medication name
-NAME_USER = "Noah"
-REMINDER_TIME = "00:00" 
-REMINDER_DAY = "" # e.g., schedule.THURSDAY
+# Store all scheduled jobs so we can cancel them
+# Format: (medicine, day, time, job1, job2)
+scheduled_jobs = []
 
-subject = "Medication Reminder App"
-
-title = ""
-message = ""
-timout = 10
-
-
-#sends an email from gmail account
+# EMAIL NOTIFICATION
 def send_email(subject: str, body: str):
-    msg = MIMEText(body)        
+    msg = MIMEText(body)
     msg["Subject"] = subject
     msg["From"] = SENDER_EMAIL
     msg["To"] = RECIPIENT_EMAIL
 
-    # Gmail over SSL (simple & reliable)
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
         server.login(SENDER_EMAIL, APP_PASSWORD)
         server.send_message(msg)
 
-
-#details of reminder 
+# DESKTOP NOTIFICATION
 def remind(title: str, message: str, timeout: int):
-    # use the parameters you passed in
     notification.notify(
         title=title,
         message=message,
         timeout=timeout,
     )
 
-def run_scheduler():
-    print("[NoAPP] Scheduler started...")
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+# SCHEDULE A REMINDER
+def schedule_reminder(medicine, day, time, user_name):
+    # Popup notification job
+    job1 = schedule.every().__getattribute__(day).at(time).do(
+        remind,
+        "Medication Reminder",
+        f"Take your {medicine}",
+        10
+    )
 
+    # Email job
+    job2 = schedule.every().__getattribute__(day).at(time).do(
+        send_email,
+        "Medication Reminder",
+        f"Hi {user_name},\n\nIt's time to take your {medicine}.\n-- Reminder App"
+    )
 
-#  everything above stays the same 
+    scheduled_jobs.append((medicine, day, time, job1, job2))
 
-if __name__ == "__main__":
-    #Use getattr() to schedule dynamically
-    if hasattr(schedule.every(), REMINDER_DAY):
-        getattr(schedule.every(), REMINDER_DAY).at(REMINDER_TIME).do(
-            remind, "Medication Reminder", "Take {MEDICATION_NAME} at this time", 10
-        )
-        getattr(schedule.every(), REMINDER_DAY).at(REMINDER_TIME).do(
-            send_email, "---TEST--- ",f"Hi {NAME_USER},\n\nIt's time to take your {MEDICATION_NAME}.\n\n—Your Reminder App"
-        )  
-        print(f"Scheduled for {REMINDER_DAY.title()} at {REMINDER_TIME}")
-#rejects invalid day input! and prints error message
-    else:
-        print(f"Invalid day: {REMINDER_DAY}")
+    print(f"[NoAPP] Scheduled {medicine} on {day} at {time}")
 
-    #while True:
-        #schedule.run_pending()
-        #time.sleep(1)
+# CANCEL A REMINDER
+def cancel_reminder(medicine, day, time):
+    for entry in scheduled_jobs:
+        med, d, t, job1, job2 = entry
+        if med == medicine and d == day and t == time:
+            schedule.cancel_job(job1)
+            schedule.cancel_job(job2)
+            scheduled_jobs.remove(entry)
+            print(f"[NoAPP] CANCELLED reminder: {medicine} on {day} at {time}")
+            return True
+    print(f"[NoAPP] No matching reminder to cancel.")
+    return False
+
+#   START BACKGROUND LOOP
+def start_scheduler_background():
+    def loop():
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
+    t = threading.Thread(target=loop, daemon=True)
+    t.start()
