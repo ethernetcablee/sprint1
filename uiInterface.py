@@ -4,10 +4,10 @@ import NoAPP
 service = ReminderService()
 
 # Fill these in for your account
-NoAPP.SENDER_EMAIL = "ninjabec05@gmail.com"
-NoAPP.APP_PASSWORD = "guypmgvxnowtipgn"
-NoAPP.RECIPIENT_EMAIL = "ninjabec05@gmail.com"
-NoAPP.NAME_USER = "Blake"
+NoAPP.SENDER_EMAIL = ""
+NoAPP.APP_PASSWORD = ""
+NoAPP.RECIPIENT_EMAIL = ""
+NoAPP.NAME_USER = ""
 
 # Start scheduler once
 NoAPP.start_scheduler_background()
