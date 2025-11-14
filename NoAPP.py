@@ -43,7 +43,11 @@ def remind(title: str, message: str, timeout: int):
         timeout=timeout,
     )
 
-
+def run_scheduler():
+    print("[NoAPP] Scheduler started...")
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
 
 
 #  everything above stays the same 
