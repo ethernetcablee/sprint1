@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
+import NoAPP
 
 TIME_MASK = "%I.%M %p"   # e.g., "10.00 AM"; "09.00 PM"
 DATE_MASK = "%m/%d/%Y"
@@ -56,3 +57,19 @@ class ReminderService:
         except ValueError:
             raise ValidationError("Date must be MM/DD/YYYY")
         return [r for r in self._reminders if r.when.date() == target]
+
+def schedule_reminder(medicine_name, dosage, day, time, user_name="User"):
+    """
+    Connects the reminder created in medicine_core to the notification system in NoAPP.
+    """
+    # Set scheduler variables
+    NoAPP.MEDICATION_NAME = medicine_name
+    NoAPP.NAME_USER = user_name
+    NoAPP.REMINDER_DAY = day.lower()
+    NoAPP.REMINDER_TIME = time
+
+    print(f"[CORE] Scheduling reminder for {medicine_name} on {day} at {time}...")
+
+    # We do NOT start NoAPP's infinite while-loop here
+    # The UI will start it at the end of all reminders
+    return True
