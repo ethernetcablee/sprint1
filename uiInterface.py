@@ -1,5 +1,6 @@
 import NoAPP
-import medicine_core
+from medicine_core import ReminderService, ValidationError
+service = ReminderService()
 """
 Show Reminders
 Add new Reminder
